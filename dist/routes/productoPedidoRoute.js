@@ -24,6 +24,14 @@ productoPedidoRouter.get('/obtenerPorPedido', [auth_1.verificaToken], (req, resp
     const obtenerPorPedido = new productoPedidoClass_1.ProductoPedido();
     obtenerPorPedido.obtenerPorPedido(req, resp);
 });
+productoPedidoRouter.get('/obtenerTodos', [auth_1.verificaToken], (req, resp) => {
+    const obtenerTodos = new productoPedidoClass_1.ProductoPedido();
+    obtenerTodos.obtenerTodos(req, resp);
+});
+productoPedidoRouter.get('/busquedaPorFecha', [auth_1.verificaToken], (req, resp) => {
+    const busquedaPorFecha = new productoPedidoClass_1.ProductoPedido();
+    busquedaPorFecha.busquedaPorFecha(req, resp);
+});
 productoPedidoRouter.delete('/eliminarProductoPedido', [auth_1.verificaToken], (req, resp) => {
     const eliminarProductoPedido = new productoPedidoClass_1.ProductoPedido();
     eliminarProductoPedido.eliminarProductoPedido(req, resp);

@@ -13,6 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductoPedido = void 0;
+const mongoose = require("mongoose");
+const moment_1 = __importDefault(require("moment"));
+moment_1.default.locale("es");
 // Modelos
 const productoPedidoModel_1 = __importDefault(require("../models/productoPedidoModel"));
 const pedidoModel_1 = __importDefault(require("../models/pedidoModel"));
@@ -22,7 +25,7 @@ class ProductoPedido {
     constructor() { }
     crearProductoPedido(req, resp) {
         const cantidad = Math.floor(Number(req.body.cantidad));
-        const producto = req.get("producto");
+        const producto = new mongoose.Types.ObjectId(req.get("producto"));
         const precio = Number(parseFloat(req.body.precio).toFixed(2));
         const pedido = req.get("pedido");
         pedidoModel_1.default
@@ -167,6 +170,140 @@ class ProductoPedido {
             return resp.json({
                 ok: true,
                 pedidoDB: pedidoDB,
+            });
+        });
+    }
+    obtenerTodos(req, resp) {
+        productoPedidoModel_1.default
+            .find({})
+            .populate({
+            path: "pedido",
+            populate: { path: "idCreador sucursal cliente" },
+        })
+            .populate({ path: "producto", populate: { path: "categoria" } })
+            .exec((err, productosPedidosDB) => {
+            if (err) {
+                return resp.json({
+                    ok: false,
+                    mensaje: `Error interno`,
+                    error: err,
+                });
+            }
+            return resp.json({
+                ok: true,
+                productosPedidosDB,
+            });
+        });
+    }
+    // busquedaPorFecha(req: any, resp: Response): void {
+    //   const fechaInicial: string = req.get("fechaInicial");
+    //   const fechaFinal: string = req.get("fechaFinal");
+    //   const fechaI = moment(fechaInicial).format("DD-MM-YYYY");
+    //   const fechaF = moment(fechaFinal).format("DD-MM-YYYY");
+    //   productoPedidoModel
+    //     .find({
+    //       fechaRegistro: { $gte: fechaI, $lte: fechaF },
+    //     })
+    //     .populate({
+    //       path: "pedido",
+    //       populate: { path: "idCreador sucursal cliente" },
+    //     })
+    //     .populate({ path: "producto", populate: { path: "categoria" } })
+    //     .exec((err: CallbackError, productosPedidosDB: Array<any>) => {
+    //       if (err) {
+    //         return resp.json({
+    //           ok: false,
+    //           mensaje: `Error interno`,
+    //           error: err,
+    //         });
+    //       }
+    //       return resp.json({
+    //         ok: true,
+    //         productosPedidosDB,
+    //       });
+    //     });
+    // }
+    busquedaPorFecha(req, resp) {
+        const fechaInicial = req.get("fechaInicial");
+        const fechaFinal = req.get("fechaFinal");
+        const fechaI = (0, moment_1.default)(fechaInicial).format("YYYY-MM-DD");
+        const fechaF = (0, moment_1.default)(fechaFinal).format("YYYY-MM-DD");
+        // const fechaI = moment(fechaInicial).format("DD-MM-YYYY");
+        // const fechaF = moment(fechaFinal).format("DD-MM-YYYY");
+        productoPedidoModel_1.default
+            .aggregate([
+            {
+                $lookup: {
+                    from: "pedidos",
+                    localField: "pedido",
+                    foreignField: "_id",
+                    as: "Pedido",
+                },
+            },
+            {
+                $lookup: {
+                    from: "userworkers",
+                    localField: "Pedido.idCreador",
+                    foreignField: "_id",
+                    as: "Worker",
+                },
+            },
+            {
+                $lookup: {
+                    from: "userclients",
+                    localField: "Pedido.cliente",
+                    foreignField: "_id",
+                    as: "Cliente",
+                },
+            },
+            {
+                $lookup: {
+                    from: "sucursales",
+                    localField: "Pedido.sucursal",
+                    foreignField: "_id",
+                    as: "Sucursal",
+                },
+            },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "producto",
+                    foreignField: "_id",
+                    as: "Producto",
+                },
+            },
+            {
+                $lookup: {
+                    from: "categorias",
+                    localField: "Producto.categoria",
+                    foreignField: "_id",
+                    as: "Categoria",
+                },
+            },
+            {
+                $match: {
+                    $and: [{ "Pedido.fecha_alta": { $gte: fechaI, $lte: fechaF } }],
+                },
+            },
+            // {
+            //   $replaceRoot: {
+            //     newRoot: {
+            //       $mergeObjects: [{ $arrayElemAt: ["$Pedido", 0] }, "$$ROOT"],
+            //     },
+            //   },
+            // },
+        ])
+            .exec((err, productosPedidosDB) => {
+            if (err) {
+                return resp.json({
+                    ok: false,
+                    mensaje: `Error interno`,
+                    error: err,
+                });
+            }
+            return resp.json({
+                ok: true,
+                productosPedidosDB,
             });
         });
     }
@@ -400,12 +537,15 @@ class ProductoPedido {
                 });
             }
             const nuevoProductoPedido = new productoPedidoModel_1.default({
+                idCreador: req.usuario._id,
                 cantidad: cantidad,
                 precio: precio,
                 producto: idProducto,
                 pedido: idPedido,
                 total: totalProductoPedido,
                 comentario: comentario,
+                // fechaRegistro: moment().format("DD-MM-YYYY"),
+                fechaRegistro: (0, moment_1.default)().format("DD-MM-YYYY"),
             });
             nuevoProductoPedido.save((err, productoPedidoDB) => __awaiter(this, void 0, void 0, function* () {
                 if (err) {

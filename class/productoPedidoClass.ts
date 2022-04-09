@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 import { CallbackError } from "mongoose";
+const mongoose = require("mongoose");
+import moment from "moment";
+moment.locale("es");
 
 // Modelos
 import productoPedidoModel from "../models/productoPedidoModel";
@@ -16,7 +19,7 @@ export class ProductoPedido {
 
   crearProductoPedido(req: any, resp: Response): void {
     const cantidad = Math.floor(Number(req.body.cantidad));
-    const producto = req.get("producto");
+    const producto = new mongoose.Types.ObjectId(req.get("producto"));
     const precio = Number(parseFloat(req.body.precio).toFixed(2));
     const pedido = req.get("pedido");
 
@@ -211,6 +214,149 @@ export class ProductoPedido {
         return resp.json({
           ok: true,
           pedidoDB: pedidoDB,
+        });
+      });
+  }
+
+  obtenerTodos(req: any, resp: Response): void {
+    productoPedidoModel
+      .find({})
+      .populate({
+        path: "pedido",
+        populate: { path: "idCreador sucursal cliente" },
+      })
+      .populate({ path: "producto", populate: { path: "categoria" } })
+      .exec((err: CallbackError, productosPedidosDB: Array<any>) => {
+        if (err) {
+          return resp.json({
+            ok: false,
+            mensaje: `Error interno`,
+            error: err,
+          });
+        }
+
+        return resp.json({
+          ok: true,
+          productosPedidosDB,
+        });
+      });
+  }
+
+  // busquedaPorFecha(req: any, resp: Response): void {
+  //   const fechaInicial: string = req.get("fechaInicial");
+  //   const fechaFinal: string = req.get("fechaFinal");
+
+  //   const fechaI = moment(fechaInicial).format("DD-MM-YYYY");
+  //   const fechaF = moment(fechaFinal).format("DD-MM-YYYY");
+
+  //   productoPedidoModel
+  //     .find({
+  //       fechaRegistro: { $gte: fechaI, $lte: fechaF },
+  //     })
+  //     .populate({
+  //       path: "pedido",
+  //       populate: { path: "idCreador sucursal cliente" },
+  //     })
+  //     .populate({ path: "producto", populate: { path: "categoria" } })
+  //     .exec((err: CallbackError, productosPedidosDB: Array<any>) => {
+  //       if (err) {
+  //         return resp.json({
+  //           ok: false,
+  //           mensaje: `Error interno`,
+  //           error: err,
+  //         });
+  //       }
+
+  //       return resp.json({
+  //         ok: true,
+  //         productosPedidosDB,
+  //       });
+  //     });
+  // }
+
+  busquedaPorFecha(req: any, resp: Response): void {
+    const fechaInicial: string = req.get("fechaInicial");
+    const fechaFinal: string = req.get("fechaFinal");
+
+    const fechaI = moment(fechaInicial).format("YYYY-MM-DD");
+    const fechaF = moment(fechaFinal).format("YYYY-MM-DD");
+    // const fechaI = moment(fechaInicial).format("DD-MM-YYYY");
+    // const fechaF = moment(fechaFinal).format("DD-MM-YYYY");
+
+    productoPedidoModel
+      .aggregate([
+        {
+          $lookup: {
+            from: "pedidos",
+            localField: "pedido",
+            foreignField: "_id",
+            as: "Pedido",
+          },
+        },
+        {
+          $lookup: {
+            from: "userworkers",
+            localField: "Pedido.idCreador",
+            foreignField: "_id",
+            as: "Worker",
+          },
+        },
+        {
+          $lookup: {
+            from: "userclients",
+            localField: "Pedido.cliente",
+            foreignField: "_id",
+            as: "Cliente",
+          },
+        },
+        {
+          $lookup: {
+            from: "sucursales",
+            localField: "Pedido.sucursal",
+            foreignField: "_id",
+            as: "Sucursal",
+          },
+        },
+        {
+          $lookup: {
+            from: "products",
+            localField: "producto",
+            foreignField: "_id",
+            as: "Producto",
+          },
+        },
+        {
+          $lookup: {
+            from: "categorias",
+            localField: "Producto.categoria",
+            foreignField: "_id",
+            as: "Categoria",
+          },
+        },
+        {
+          $match: {
+            $and: [{ "Pedido.fecha_alta": { $gte: fechaI, $lte: fechaF } }],
+          },
+        },
+        // {
+        //   $replaceRoot: {
+        //     newRoot: {
+        //       $mergeObjects: [{ $arrayElemAt: ["$Pedido", 0] }, "$$ROOT"],
+        //     },
+        //   },
+        // },
+      ])
+      .exec((err: CallbackError, productosPedidosDB: Array<any>) => {
+        if (err) {
+          return resp.json({
+            ok: false,
+            mensaje: `Error interno`,
+            error: err,
+          });
+        }
+        return resp.json({
+          ok: true,
+          productosPedidosDB,
         });
       });
   }
@@ -523,12 +669,15 @@ export class ProductoPedido {
       }
 
       const nuevoProductoPedido = new productoPedidoModel({
+        idCreador: req.usuario._id,
         cantidad: cantidad,
         precio: precio,
         producto: idProducto,
         pedido: idPedido,
         total: totalProductoPedido,
         comentario: comentario,
+        // fechaRegistro: moment().format("DD-MM-YYYY"),
+        fechaRegistro: moment().format("DD-MM-YYYY"),
       });
 
       nuevoProductoPedido.save(

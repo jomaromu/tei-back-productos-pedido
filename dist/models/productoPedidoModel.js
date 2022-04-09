@@ -6,15 +6,17 @@ const mongoose_1 = __importDefault(require("mongoose"));
 // Crear esquema
 const Schema = mongoose_1.default.Schema;
 const productoPedidoSchema = new Schema({
+    idCreador: { type: mongoose_1.default.Types.ObjectId, ref: "userWorker" },
     cantidad: { type: Number, default: 1 },
     precio: { type: Number, default: 0 },
-    comentario: { type: String, default: 'Ninguno' },
+    comentario: { type: String, default: "Ninguno" },
     total: { type: Number, default: 0 },
     seguimiento_disenio: { type: String },
     seguimiento_produccion: { type: String },
-    producto: { type: Schema.Types.ObjectId, ref: 'products' },
+    producto: { type: Schema.Types.ObjectId, ref: "products" },
     // estado: { type: Boolean, default: false },
-    pedido: { type: mongoose_1.default.Types.ObjectId, ref: 'pedidos' },
+    pedido: { type: mongoose_1.default.Types.ObjectId, ref: "pedidos" },
+    fechaRegistro: { type: String },
     // inhabilitado: { type: Boolean, default: false },
 });
-module.exports = mongoose_1.default.model('productoPedido', productoPedidoSchema);
+module.exports = mongoose_1.default.model("productoPedido", productoPedidoSchema);

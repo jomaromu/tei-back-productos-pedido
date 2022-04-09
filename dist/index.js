@@ -20,15 +20,19 @@ server.app.use((0, express_fileupload_1.default)());
 // cors
 server.app.use((0, cors_1.default)({ origin: true, credentials: true }));
 // Models
-require('./models/pagosModel');
+require("./models/pagosModel");
+require("./models/workerModel");
+require("./models/sucursalModel");
+require("./models/clientModel");
+require("./models/categoriaModel");
 // conexion local
-mongoose_1.default.connect('mongodb://127.0.0.1:27017/todoImpresiones', { autoIndex: false }, (err) => {
+mongoose_1.default.connect("mongodb://127.0.0.1:27017/todoImpresiones", { autoIndex: false }, (err) => {
     if (err)
         throw err;
-    console.log('Base de datos Online');
+    console.log("Base de datos Online");
 });
 // usar las rutas
-server.app.use('/productoPedido', productoPedidoRoute_1.default);
+server.app.use("/productoPedido", productoPedidoRoute_1.default);
 // correr servidor
 server.start(() => {
     console.log(`Servidor corriendo en el puerto: ${server.port}`);
