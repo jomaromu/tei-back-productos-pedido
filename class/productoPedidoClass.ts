@@ -274,93 +274,6 @@ export class ProductoPedido {
   //     });
   // }
 
-  busquedaPorFecha(req: any, resp: Response): void {
-    const fechaInicial: string = req.get("fechaInicial");
-    const fechaFinal: string = req.get("fechaFinal");
-
-    const fechaI = moment(fechaInicial).format("YYYY-MM-DD");
-    const fechaF = moment(fechaFinal).format("YYYY-MM-DD");
-    // const fechaI = moment(fechaInicial).format("DD-MM-YYYY");
-    // const fechaF = moment(fechaFinal).format("DD-MM-YYYY");
-
-    productoPedidoModel
-      .aggregate([
-        {
-          $lookup: {
-            from: "pedidos",
-            localField: "pedido",
-            foreignField: "_id",
-            as: "Pedido",
-          },
-        },
-        {
-          $lookup: {
-            from: "userworkers",
-            localField: "Pedido.idCreador",
-            foreignField: "_id",
-            as: "Worker",
-          },
-        },
-        {
-          $lookup: {
-            from: "userclients",
-            localField: "Pedido.cliente",
-            foreignField: "_id",
-            as: "Cliente",
-          },
-        },
-        {
-          $lookup: {
-            from: "sucursales",
-            localField: "Pedido.sucursal",
-            foreignField: "_id",
-            as: "Sucursal",
-          },
-        },
-        {
-          $lookup: {
-            from: "products",
-            localField: "producto",
-            foreignField: "_id",
-            as: "Producto",
-          },
-        },
-        {
-          $lookup: {
-            from: "categorias",
-            localField: "Producto.categoria",
-            foreignField: "_id",
-            as: "Categoria",
-          },
-        },
-        {
-          $match: {
-            $and: [{ "Pedido.fecha_alta": { $gte: fechaI, $lte: fechaF } }],
-          },
-        },
-        // {
-        //   $replaceRoot: {
-        //     newRoot: {
-        //       $mergeObjects: [{ $arrayElemAt: ["$Pedido", 0] }, "$$ROOT"],
-        //     },
-        //   },
-        // },
-      ])
-      .exec((err: CallbackError, productosPedidosDB: Array<any>) => {
-        if (err) {
-          return resp.json({
-            ok: false,
-            mensaje: `Error interno`,
-            error: err,
-          });
-        }
-        return resp.json({
-          ok: true,
-          productosPedidosDB,
-        });
-      });
-  }
-
   eliminarProductoPedido(req: any, resp: Response): void {
     const id = req.get("id");
     const pedido = req.get("pedido");
@@ -783,5 +696,175 @@ export class ProductoPedido {
         }
       );
     });
+  }
+
+  /* REPORTES */
+  getTodos(req: any, resp: Response): void {
+    productoPedidoModel
+      .aggregate([
+        {
+          $lookup: {
+            from: "pedidos",
+            localField: "pedido",
+            foreignField: "_id",
+            as: "Pedido",
+          },
+        },
+        {
+          $lookup: {
+            from: "userworkers",
+            localField: "Pedido.idCreador",
+            foreignField: "_id",
+            as: "Worker",
+          },
+        },
+        {
+          $lookup: {
+            from: "userclients",
+            localField: "Pedido.cliente",
+            foreignField: "_id",
+            as: "Cliente",
+          },
+        },
+        {
+          $lookup: {
+            from: "sucursales",
+            localField: "Pedido.sucursal",
+            foreignField: "_id",
+            as: "Sucursal",
+          },
+        },
+        {
+          $lookup: {
+            from: "products",
+            localField: "producto",
+            foreignField: "_id",
+            as: "Producto",
+          },
+        },
+        {
+          $lookup: {
+            from: "categorias",
+            localField: "Producto.categoria",
+            foreignField: "_id",
+            as: "Categoria",
+          },
+        },
+        {
+          $match: {
+            $and: [{ "Pedido.etapa_pedido": { $ne: 5 } }],
+          },
+        },
+        // {
+        //   $replaceRoot: {
+        //     newRoot: {
+        //       $mergeObjects: [{ $arrayElemAt: ["$Pedido", 0] }, "$$ROOT"],
+        //     },
+        //   },
+        // },
+      ])
+      .exec((err: CallbackError, productosPedidosDB: Array<any>) => {
+        if (err) {
+          return resp.json({
+            ok: false,
+            mensaje: `Error interno`,
+            error: err,
+          });
+        }
+        return resp.json({
+          ok: true,
+          productosPedidosDB,
+        });
+      });
+  }
+
+  busquedaPorFecha(req: any, resp: Response): void {
+    const fechaInicial: string = req.get("fechaInicial");
+    const fechaFinal: string = req.get("fechaFinal");
+
+    const fechaI = moment(fechaInicial).format("YYYY-MM-DD");
+    const fechaF = moment(fechaFinal).format("YYYY-MM-DD");
+    // const fechaI = moment(fechaInicial).format("DD-MM-YYYY");
+    // const fechaF = moment(fechaFinal).format("DD-MM-YYYY");
+
+    productoPedidoModel
+      .aggregate([
+        {
+          $lookup: {
+            from: "pedidos",
+            localField: "pedido",
+            foreignField: "_id",
+            as: "Pedido",
+          },
+        },
+        {
+          $lookup: {
+            from: "userworkers",
+            localField: "Pedido.idCreador",
+            foreignField: "_id",
+            as: "Worker",
+          },
+        },
+        {
+          $lookup: {
+            from: "userclients",
+            localField: "Pedido.cliente",
+            foreignField: "_id",
+            as: "Cliente",
+          },
+        },
+        {
+          $lookup: {
+            from: "sucursales",
+            localField: "Pedido.sucursal",
+            foreignField: "_id",
+            as: "Sucursal",
+          },
+        },
+        {
+          $lookup: {
+            from: "products",
+            localField: "producto",
+            foreignField: "_id",
+            as: "Producto",
+          },
+        },
+        {
+          $lookup: {
+            from: "categorias",
+            localField: "Producto.categoria",
+            foreignField: "_id",
+            as: "Categoria",
+          },
+        },
+        {
+          $match: {
+            $and: [
+              { "Pedido.fecha_alta": { $gte: fechaI, $lte: fechaF } },
+              { "Pedido.etapa_pedido": { $ne: 5 } },
+            ],
+          },
+        },
+        // {
+        //   $replaceRoot: {
+        //     newRoot: {
+        //       $mergeObjects: [{ $arrayElemAt: ["$Pedido", 0] }, "$$ROOT"],
+        //     },
+        //   },
+        // },
+      ])
+      .exec((err: CallbackError, productosPedidosDB: Array<any>) => {
+        if (err) {
+          return resp.json({
+            ok: false,
+            mensaje: `Error interno`,
+            error: err,
+          });
+        }
+        return resp.json({
+          ok: true,
+          productosPedidosDB,
+        });
+      });
   }
 }

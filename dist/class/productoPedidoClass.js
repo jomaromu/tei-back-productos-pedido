@@ -223,90 +223,6 @@ class ProductoPedido {
     //       });
     //     });
     // }
-    busquedaPorFecha(req, resp) {
-        const fechaInicial = req.get("fechaInicial");
-        const fechaFinal = req.get("fechaFinal");
-        const fechaI = (0, moment_1.default)(fechaInicial).format("YYYY-MM-DD");
-        const fechaF = (0, moment_1.default)(fechaFinal).format("YYYY-MM-DD");
-        // const fechaI = moment(fechaInicial).format("DD-MM-YYYY");
-        // const fechaF = moment(fechaFinal).format("DD-MM-YYYY");
-        productoPedidoModel_1.default
-            .aggregate([
-            {
-                $lookup: {
-                    from: "pedidos",
-                    localField: "pedido",
-                    foreignField: "_id",
-                    as: "Pedido",
-                },
-            },
-            {
-                $lookup: {
-                    from: "userworkers",
-                    localField: "Pedido.idCreador",
-                    foreignField: "_id",
-                    as: "Worker",
-                },
-            },
-            {
-                $lookup: {
-                    from: "userclients",
-                    localField: "Pedido.cliente",
-                    foreignField: "_id",
-                    as: "Cliente",
-                },
-            },
-            {
-                $lookup: {
-                    from: "sucursales",
-                    localField: "Pedido.sucursal",
-                    foreignField: "_id",
-                    as: "Sucursal",
-                },
-            },
-            {
-                $lookup: {
-                    from: "products",
-                    localField: "producto",
-                    foreignField: "_id",
-                    as: "Producto",
-                },
-            },
-            {
-                $lookup: {
-                    from: "categorias",
-                    localField: "Producto.categoria",
-                    foreignField: "_id",
-                    as: "Categoria",
-                },
-            },
-            {
-                $match: {
-                    $and: [{ "Pedido.fecha_alta": { $gte: fechaI, $lte: fechaF } }],
-                },
-            },
-            // {
-            //   $replaceRoot: {
-            //     newRoot: {
-            //       $mergeObjects: [{ $arrayElemAt: ["$Pedido", 0] }, "$$ROOT"],
-            //     },
-            //   },
-            // },
-        ])
-            .exec((err, productosPedidosDB) => {
-            if (err) {
-                return resp.json({
-                    ok: false,
-                    mensaje: `Error interno`,
-                    error: err,
-                });
-            }
-            return resp.json({
-                ok: true,
-                productosPedidosDB,
-            });
-        });
-    }
     eliminarProductoPedido(req, resp) {
         const id = req.get("id");
         const pedido = req.get("pedido");
@@ -626,6 +542,172 @@ class ProductoPedido {
                     });
                 }));
             }));
+        });
+    }
+    /* REPORTES */
+    getTodos(req, resp) {
+        productoPedidoModel_1.default
+            .aggregate([
+            {
+                $lookup: {
+                    from: "pedidos",
+                    localField: "pedido",
+                    foreignField: "_id",
+                    as: "Pedido",
+                },
+            },
+            {
+                $lookup: {
+                    from: "userworkers",
+                    localField: "Pedido.idCreador",
+                    foreignField: "_id",
+                    as: "Worker",
+                },
+            },
+            {
+                $lookup: {
+                    from: "userclients",
+                    localField: "Pedido.cliente",
+                    foreignField: "_id",
+                    as: "Cliente",
+                },
+            },
+            {
+                $lookup: {
+                    from: "sucursales",
+                    localField: "Pedido.sucursal",
+                    foreignField: "_id",
+                    as: "Sucursal",
+                },
+            },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "producto",
+                    foreignField: "_id",
+                    as: "Producto",
+                },
+            },
+            {
+                $lookup: {
+                    from: "categorias",
+                    localField: "Producto.categoria",
+                    foreignField: "_id",
+                    as: "Categoria",
+                },
+            },
+            {
+                $match: {
+                    $and: [{ "Pedido.etapa_pedido": { $ne: 5 } }],
+                },
+            },
+            // {
+            //   $replaceRoot: {
+            //     newRoot: {
+            //       $mergeObjects: [{ $arrayElemAt: ["$Pedido", 0] }, "$$ROOT"],
+            //     },
+            //   },
+            // },
+        ])
+            .exec((err, productosPedidosDB) => {
+            if (err) {
+                return resp.json({
+                    ok: false,
+                    mensaje: `Error interno`,
+                    error: err,
+                });
+            }
+            return resp.json({
+                ok: true,
+                productosPedidosDB,
+            });
+        });
+    }
+    busquedaPorFecha(req, resp) {
+        const fechaInicial = req.get("fechaInicial");
+        const fechaFinal = req.get("fechaFinal");
+        const fechaI = (0, moment_1.default)(fechaInicial).format("YYYY-MM-DD");
+        const fechaF = (0, moment_1.default)(fechaFinal).format("YYYY-MM-DD");
+        // const fechaI = moment(fechaInicial).format("DD-MM-YYYY");
+        // const fechaF = moment(fechaFinal).format("DD-MM-YYYY");
+        productoPedidoModel_1.default
+            .aggregate([
+            {
+                $lookup: {
+                    from: "pedidos",
+                    localField: "pedido",
+                    foreignField: "_id",
+                    as: "Pedido",
+                },
+            },
+            {
+                $lookup: {
+                    from: "userworkers",
+                    localField: "Pedido.idCreador",
+                    foreignField: "_id",
+                    as: "Worker",
+                },
+            },
+            {
+                $lookup: {
+                    from: "userclients",
+                    localField: "Pedido.cliente",
+                    foreignField: "_id",
+                    as: "Cliente",
+                },
+            },
+            {
+                $lookup: {
+                    from: "sucursales",
+                    localField: "Pedido.sucursal",
+                    foreignField: "_id",
+                    as: "Sucursal",
+                },
+            },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "producto",
+                    foreignField: "_id",
+                    as: "Producto",
+                },
+            },
+            {
+                $lookup: {
+                    from: "categorias",
+                    localField: "Producto.categoria",
+                    foreignField: "_id",
+                    as: "Categoria",
+                },
+            },
+            {
+                $match: {
+                    $and: [
+                        { "Pedido.fecha_alta": { $gte: fechaI, $lte: fechaF } },
+                        { "Pedido.etapa_pedido": { $ne: 5 } },
+                    ],
+                },
+            },
+            // {
+            //   $replaceRoot: {
+            //     newRoot: {
+            //       $mergeObjects: [{ $arrayElemAt: ["$Pedido", 0] }, "$$ROOT"],
+            //     },
+            //   },
+            // },
+        ])
+            .exec((err, productosPedidosDB) => {
+            if (err) {
+                return resp.json({
+                    ok: false,
+                    mensaje: `Error interno`,
+                    error: err,
+                });
+            }
+            return resp.json({
+                ok: true,
+                productosPedidosDB,
+            });
         });
     }
 }
