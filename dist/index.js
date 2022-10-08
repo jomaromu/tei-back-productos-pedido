@@ -20,11 +20,7 @@ server.app.use((0, express_fileupload_1.default)());
 // cors
 server.app.use((0, cors_1.default)({ origin: true, credentials: true }));
 // Models
-require("./models/pagosModel");
-require("./models/workerModel");
-require("./models/sucursalModel");
-require("./models/clientModel");
-require("./models/categoriaModel");
+require("./models/productModel");
 // conexion local
 mongoose_1.default.connect("mongodb://127.0.0.1:27017/todoImpresiones", { autoIndex: false }, (err) => {
     if (err)

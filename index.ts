@@ -21,11 +21,7 @@ server.app.use(fileUpload());
 server.app.use(cors({ origin: true, credentials: true }));
 
 // Models
-require("./models/pagosModel");
-require("./models/workerModel");
-require("./models/sucursalModel");
-require("./models/clientModel");
-require("./models/categoriaModel");
+require("./models/productModel");
 
 // conexion local
 mongoose.connect(

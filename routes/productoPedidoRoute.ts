@@ -4,54 +4,23 @@ import { ProductoPedido } from "../class/productoPedidoClass";
 
 const productoPedidoRouter = Router();
 
+export default productoPedidoRouter;
+
 productoPedidoRouter.post(
   "/crearProductoPedido",
   [verificaToken],
   (req: Request, resp: Response) => {
-    const productoPedido = new ProductoPedido();
-    productoPedido.crearProductoPedido(req, resp);
-  }
-);
-
-productoPedidoRouter.put(
-  "/editarProductoPedido",
-  [verificaToken],
-  (req: Request, resp: Response) => {
-    const editarProductoPedido = new ProductoPedido();
-    editarProductoPedido.editarProductoPedido(req, resp);
-  }
-);
-
-// productoPedidoRouter.put('/inhabilitarProductoPedido', [verificaToken], (req: Request, resp: Response) => {
-
-//     const inhabilitarProductoPedido = new ProductoPedido();
-//     inhabilitarProductoPedido.inhabilitarProductoPedido(req, resp);
-// });
-
-productoPedidoRouter.get(
-  "/obtenerProductoPedido",
-  [verificaToken],
-  (req: Request, resp: Response) => {
-    const obtenerProductoPedido = new ProductoPedido();
-    obtenerProductoPedido.obtenerProductoPedido(req, resp);
+    const crearProductoPedido = new ProductoPedido();
+    crearProductoPedido.crearProductoPedido(req, resp);
   }
 );
 
 productoPedidoRouter.get(
-  "/obtenerPorPedido",
+  "/obtenerProductosPedidos",
   [verificaToken],
   (req: Request, resp: Response) => {
-    const obtenerPorPedido = new ProductoPedido();
-    obtenerPorPedido.obtenerPorPedido(req, resp);
-  }
-);
-
-productoPedidoRouter.get(
-  "/obtenerTodos",
-  [verificaToken],
-  (req: Request, resp: Response) => {
-    const obtenerTodos = new ProductoPedido();
-    obtenerTodos.obtenerTodos(req, resp);
+    const obtenerProductosPedidos = new ProductoPedido();
+    obtenerProductosPedidos.obtenerProductosPedidos(req, resp);
   }
 );
 
@@ -64,23 +33,11 @@ productoPedidoRouter.delete(
   }
 );
 
-/* REPORTES */
-productoPedidoRouter.get(
-  "/busquedaPorFecha",
-  [verificaToken],
+productoPedidoRouter.put(
+  "/editarSeguimientos",
+  /*[verificaToken],*/
   (req: Request, resp: Response) => {
-    const busquedaPorFecha = new ProductoPedido();
-    busquedaPorFecha.busquedaPorFecha(req, resp);
+    const editarSeguimientos = new ProductoPedido();
+    editarSeguimientos.editarSeguimientos(req, resp);
   }
 );
-
-productoPedidoRouter.get(
-  "/getTodos",
-  [verificaToken],
-  (req: Request, resp: Response) => {
-    const getTodos = new ProductoPedido();
-    getTodos.getTodos(req, resp);
-  }
-);
-
-export default productoPedidoRouter;
