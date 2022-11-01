@@ -16,6 +16,7 @@ const productosPedidosSchema = new Schema({
   seg_prod: { type: String },
   itbms: { type: Boolean, default: false },
   total: { type: Number, default: 0 },
+  foranea: { type: Schema.Types.ObjectId, ref: "userWorker" },
 });
 
 // validacion para único elemento

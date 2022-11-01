@@ -16,6 +16,8 @@ export class ProductoPedido {
 
   crearProductoPedido(req: any, resp: Response): void {
     const producto = new mongoose.Types.ObjectId(req.body.producto);
+    const foranea = new mongoose.Types.ObjectId(req.body.foranea);
+    const idEmpresa: string = req.body.foranea;
     const pedido = new mongoose.Types.ObjectId(req.body.pedido);
     const cantidad: number = req.body.cantidad;
     const precio: number = req.body.precio;
@@ -23,6 +25,7 @@ export class ProductoPedido {
 
     const crearProductoPed = new productModel({
       producto,
+      foranea,
       pedido,
       cantidad,
       precio,
@@ -38,6 +41,11 @@ export class ProductoPedido {
             err,
           });
         } else {
+          const server = Server.instance;
+          server.io
+            .in(idEmpresa)
+            .emit("cargar-productos-pedidos", { ok: true });
+          server.io.in(idEmpresa).emit("cargar-seguimiento", { ok: true });
           return resp.json({
             ok: true,
             productoPedidoDB,
@@ -49,9 +57,10 @@ export class ProductoPedido {
 
   obtenerProductosPedidos(req: any, resp: Response): void {
     const pedido = new mongoose.Types.ObjectId(req.get("pedido"));
+    const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
 
     productModel
-      .find({ pedido })
+      .find({ pedido, foranea })
       .populate("producto")
       .exec(
         (
@@ -76,9 +85,11 @@ export class ProductoPedido {
 
   eliminarProductoPedido(req: any, resp: Response): void {
     const _id = new mongoose.Types.ObjectId(req.get("id"));
+    const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
+    const idEmpresa: string = req.get("foranea");
 
-    productModel.findByIdAndDelete(
-      _id,
+    productModel.findOneAndDelete(
+      { _id, foranea },
       (err: CallbackError, productoPedidoDB: ProductoPedidoInterface) => {
         if (err) {
           return resp.json({
@@ -87,6 +98,11 @@ export class ProductoPedido {
             err,
           });
         } else {
+          const server = Server.instance;
+          server.io
+            .in(idEmpresa)
+            .emit("cargar-productos-pedidos", { ok: true });
+          server.io.in(idEmpresa).emit("cargar-seguimiento", { ok: true });
           return resp.json({
             ok: true,
             productoPedidoDB,
@@ -97,18 +113,18 @@ export class ProductoPedido {
   }
 
   editarSeguimientos(req: any, resp: Response): void {
-    const idProdPed = new mongoose.Types.ObjectId(req.get("idProdPed"));
+    const _id = new mongoose.Types.ObjectId(req.body.idProdPed);
+    const foranea = new mongoose.Types.ObjectId(req.body.foranea);
     const seg_disenio = req.body.seg_disenio;
     const seg_prod = req.body.seg_prod;
 
     const query = {
-      idProdPed,
       seg_disenio,
       seg_prod,
     };
 
-    productModel.findByIdAndUpdate(
-      idProdPed,
+    productModel.findOneAndUpdate(
+      { _id, foranea },
       query,
       { new: true },
       (err: any, productoPedidoDB: any) => {
@@ -119,6 +135,8 @@ export class ProductoPedido {
             err,
           });
         } else {
+          const server = Server.instance;
+          server.io.emit("cargar-seguimiento", { ok: true });
           return resp.json({
             ok: true,
             productoPedidoDB,

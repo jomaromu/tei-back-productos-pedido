@@ -7,18 +7,22 @@ exports.ProductoPedido = void 0;
 const mongoose = require("mongoose");
 const moment_1 = __importDefault(require("moment"));
 moment_1.default.locale("es");
+const server_1 = __importDefault(require("./server"));
 // Modelos
 const producto_pedido_model_1 = __importDefault(require("../models/producto-pedido-model"));
 class ProductoPedido {
     constructor() { }
     crearProductoPedido(req, resp) {
         const producto = new mongoose.Types.ObjectId(req.body.producto);
+        const foranea = new mongoose.Types.ObjectId(req.body.foranea);
+        const idEmpresa = req.body.foranea;
         const pedido = new mongoose.Types.ObjectId(req.body.pedido);
         const cantidad = req.body.cantidad;
         const precio = req.body.precio;
         const itbms = req.body.itbms;
         const crearProductoPed = new producto_pedido_model_1.default({
             producto,
+            foranea,
             pedido,
             cantidad,
             precio,
@@ -33,6 +37,11 @@ class ProductoPedido {
                 });
             }
             else {
+                const server = server_1.default.instance;
+                server.io
+                    .in(idEmpresa)
+                    .emit("cargar-productos-pedidos", { ok: true });
+                server.io.in(idEmpresa).emit("cargar-seguimiento", { ok: true });
                 return resp.json({
                     ok: true,
                     productoPedidoDB,
@@ -42,8 +51,9 @@ class ProductoPedido {
     }
     obtenerProductosPedidos(req, resp) {
         const pedido = new mongoose.Types.ObjectId(req.get("pedido"));
+        const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
         producto_pedido_model_1.default
-            .find({ pedido })
+            .find({ pedido, foranea })
             .populate("producto")
             .exec((err, productosPedidos) => {
             if (err) {
@@ -63,7 +73,9 @@ class ProductoPedido {
     }
     eliminarProductoPedido(req, resp) {
         const _id = new mongoose.Types.ObjectId(req.get("id"));
-        producto_pedido_model_1.default.findByIdAndDelete(_id, (err, productoPedidoDB) => {
+        const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
+        const idEmpresa = req.get("foranea");
+        producto_pedido_model_1.default.findOneAndDelete({ _id, foranea }, (err, productoPedidoDB) => {
             if (err) {
                 return resp.json({
                     ok: false,
@@ -72,6 +84,11 @@ class ProductoPedido {
                 });
             }
             else {
+                const server = server_1.default.instance;
+                server.io
+                    .in(idEmpresa)
+                    .emit("cargar-productos-pedidos", { ok: true });
+                server.io.in(idEmpresa).emit("cargar-seguimiento", { ok: true });
                 return resp.json({
                     ok: true,
                     productoPedidoDB,
@@ -80,15 +97,15 @@ class ProductoPedido {
         });
     }
     editarSeguimientos(req, resp) {
-        const idProdPed = new mongoose.Types.ObjectId(req.get("idProdPed"));
+        const _id = new mongoose.Types.ObjectId(req.body.idProdPed);
+        const foranea = new mongoose.Types.ObjectId(req.body.foranea);
         const seg_disenio = req.body.seg_disenio;
         const seg_prod = req.body.seg_prod;
         const query = {
-            idProdPed,
             seg_disenio,
             seg_prod,
         };
-        producto_pedido_model_1.default.findByIdAndUpdate(idProdPed, query, { new: true }, (err, productoPedidoDB) => {
+        producto_pedido_model_1.default.findOneAndUpdate({ _id, foranea }, query, { new: true }, (err, productoPedidoDB) => {
             if (err) {
                 return resp.json({
                     ok: false,
@@ -97,6 +114,8 @@ class ProductoPedido {
                 });
             }
             else {
+                const server = server_1.default.instance;
+                server.io.emit("cargar-seguimiento", { ok: true });
                 return resp.json({
                     ok: true,
                     productoPedidoDB,

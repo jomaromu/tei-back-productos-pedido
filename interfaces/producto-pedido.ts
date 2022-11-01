@@ -8,4 +8,5 @@ export interface ProductoPedidoInterface {
   seg_prod: string;
   itbms: boolean;
   total: number;
+  foranea: string;
 }

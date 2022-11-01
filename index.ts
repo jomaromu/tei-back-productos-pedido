@@ -25,7 +25,7 @@ require("./models/productModel");
 
 // conexion local
 mongoose.connect(
-  "mongodb://127.0.0.1:27017/todoImpresiones",
+  "mongodb://127.0.0.1:27017/angie",
   { autoIndex: false },
   (err) => {
     if (err) throw err;
